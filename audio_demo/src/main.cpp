@@ -1,10 +1,10 @@
 #include <memory>
 
-#include <xengine/rendering/transform.hpp>
 #include <xengine/app.hpp>
-#include <xengine/audio.hpp>
-#include <imgui.h>
-#include <xengine/io/os.hpp>
+#include <../../packages/xe.audio/include/audio.hpp>
+#include <../../packages/xe.io/include/os.hpp>
+#include "../../packages/xe.audio/include/audio.hpp"
+#include "../../external/imgui/imgui.h"
 
 using namespace XEngine;
 
@@ -12,9 +12,10 @@ class AudioApp : public App {
     bool open = true;
     Audio a{ "res\\sound.wav", false, {"test", 100.f, 1.f} };
 
-    virtual void initiazile() override {
+    virtual void initialize() override {
         //Initialize ImGui.
-        window.ui_initialize();
+        window.gui_initialize();
+        AudioManager::initialize();
     }
 
     virtual void update() override {
@@ -32,15 +33,23 @@ class AudioApp : public App {
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
         ImGui::Text("Audio player");
         ImGui::TextWrapped(a.get_source().c_str());
-        if(ImGui::Button("Browse...")) a.set_source(OS::open_file_dialog(a.get_source(), "All\0*.wav\0*.ogg\0*.mp3\0"));
+        if(ImGui::Button("Browse...")) {
+            OS::file_dialog dial{ a.get_source(), NULL, "All\0*.wav\0*.ogg\0*.mp3\0" };
+            a.set_source(dial.open());
+        }
         ImGui::Text("Playback");
         if(!a.is_playing()) a.stop();
+        ImGui::Checkbox("Loop", &a.loop);
         if(ImGui::Button("Play")) a.play();
         if(ImGui::Button("Stop")) a.stop();
         ImGui::End();
     }
 
-    virtual void on_shutdown() override { }
+    virtual void on_shutdown() override {
+        a.stop();
+        a.remove();
+        AudioManager::remove();
+    }
 };
 
 int main() {

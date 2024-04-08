@@ -1,6 +1,6 @@
 #include <memory>
-#include <xengine/app.hpp>
-using namespace XEngine;
+#include <firesteel/app.hpp>
+using namespace firesteel;
 
 /// <summary>
 /// Triangle example class.
